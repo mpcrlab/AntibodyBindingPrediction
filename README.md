@@ -4,5 +4,5 @@ A collection of code to pull proteins from uniprot, process them, train a CNN an
 
 The corresponding data and model weights from the original study are included.
 
-The pre-print paper can be found on [Bioarxiv here](https://www.biorxiv.org/content/10.1101/2020.08.06.240101v1).
+The pre-print paper can be found on [Biorxiv here](https://www.biorxiv.org/content/10.1101/2020.08.06.240101v1).
 
