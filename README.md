@@ -24,4 +24,4 @@ cd ~
 0. Follow the installation steps above.
 1. Please put your data in the format of 'Data_Folder/bind_class/bind_trainset.npy', 'Data_Folder/notbind/nobind_train.npy', 'Data_Folder/bind/bind_test.npy', '/notbind/nobind_test.npy'. The name of Data_Folder can be any, it is specified as an argument to the python file (step 3). The rest of the folders and files need to have these names. The numpy files should contain one sequence per row. The sequence needs to be represented as integers. 
 2. ```cd AntibodyBindingPrediction```
-3. Run the program with ```python3 Predict.py -True -Data_File -1 -200 -adam -.5 -0.001 - 200 -Result_Folder -True ```. You will have specify the arguments, which can be interpreted with ``` python3 Predict.py --help```. 
+3. Run the program with ```python3 Predict.py -True -Data_File -1 -200 -adam -.5 -0.001 - 200 -Result_Folder -True -Analysis=True```. You will have specify the arguments, which can be interpreted with ``` python3 Predict.py --help```. 
