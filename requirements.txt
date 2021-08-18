@@ -1,0 +1,6 @@
+scipy
+argparse
+numpy
+Pillow==7.1.2
+matplotlib
+torch>=1.8.1
