@@ -10,6 +10,7 @@ The pre-print paper can be found on [Biorxiv here](https://www.biorxiv.org/conte
 - Linux or macOS
 - Python 3
 - CPU or NVIDIA GPU + CUDA CuDNN
+- WandB Account
 
 ## Installation:
 - Please execute the following commands in a terminal.
