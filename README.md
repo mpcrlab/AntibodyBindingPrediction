@@ -1,6 +1,6 @@
 # Antibody Binding Site Prediction
 
-A collection of code to pull proteins from uniprot, process them, train a CNN and LSTM, then evaluate their hidden weights for binding site prediction.
+A collection of code to predict binding from protein primary sequence using LSTM hidden weights.
 
 The corresponding data and model weights from the original study are included.
 
