@@ -18,61 +18,57 @@ from torch.utils.data import TensorDataset
 
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--Train', default=True, help='True or False')
+parser.add_argument('--Data', default='Data_Folder', help='Please input the location of your data files here.')
+parser.add_argument('--N_layers', default=1, help='Please input the number of LSTM layers')
+parser.add_argument('--N_hidden', default=200, help='Please input the number of hidden units in each LSTM layer')
+parser.add_argument('--Optimizer', default='adam', help='adam or sgd')
+parser.add_argument('--Dropout', default=0.5, help='amount of dropout, value between 0 and 1')
+parser.add_argument('--Learning_rate', help='learning_rate value', default=0.001)
+parser.add_argument('--Epochs', help='number of epochs', default=200)
+parser.add_argument('--Save', help='path of folder where to save trained models')
+parser.add_argument('--Test', help= 'True or False', default='True')
+parser.add_argument('--Load', help='Path of saved model to test.')
+parser.add_argument('--Analysis',help='Analyze hidden states, True or False.', default=True)
+parser.add_argument('--Hiddens', help='Path where to save hidden states.')
+parser.add_argument('--Results', help='Path where ot save the results of analysis.')
+args=parser.parse_args()
 
 import wandb
-wandb.init(project='antibodies-flipped-CNN_sig')
+wandb.init(project='Predict_Binding-LSTM')
 wab = wandb.config
-
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('Train', help='True or False')
-parser.add_argument('Data', help='Please input the location of your data files here.')
-parser.add_argument('N_layers', help='Please input the number of LSTM layers')
-parser.add_argument('N_hidden', help='Please input the number of hidden units in each LSTM layer')
-parser.add_argument('Optimizer', help='adam or sgd, default=adam')
-parser.add_argument('Dropout', help='amount of dropout, value between 0 and 1, default=0.5')
-parser.add_argument('Learning_rate', help='learning_rate value, default=0.001')
-parser.add_argument('Epochs', help='number of epochs, default=200')
-parser.add_argument('Save', help='path of folder where to save trained models')
-parser.add_argument('Test', help= 'True or False')
-parser.add_argument('Load', help='Path of saved model to test.')
-parser.add_argument('Analysis',help='Analyze hidden states, True or False.')
-parser.add_argument('Hiddens', help='Path where to save hidden states.')
-parser.add_argument('Results', help='Path where ot save the results of analysis.')
-args=parser.parse_Args()
-
 
 df = args.Data
 
 
 wab.NUM_CLASSES = 2
-wab.N_LAYERS = args.N_layers else 1
+wab.N_LAYERS = args.N_layers
 wab.INPUT_DIM = 27
-wab.HIDDEN_DIM = args.N_hidden else 200
-wab.DROPOUT = args.Dropout else .5
-wab.LR = args.Learning_rate else 0.001
+wab.HIDDEN_DIM = args.N_hidden
+wab.DROPOUT = args.Dropout
+wab.LR = args.Learning_rate
 wab.BS = 1
-wab.NUM_EPOCHS = args.Epochs else 200
-wab.OPTIM = str(args.Optimizer) else 'adam'
+wab.NUM_EPOCHS = args.Epochs
+wab.OPTIM = str(args.Optimizer)
 
-PRESAVE_NAME = str(arg.Save)
+PRESAVE_NAME = str(args.Save)
 
 
 #some stuff for wandb
 nl = wab.N_LAYERS
 hd = wab.HIDDEN_DIM
 ba = wab.BS
-
+LSTM=True
 
 """load the data"""
-if Train:
+if args.Train:
 	np_load_old = np.load
 	np.load = lambda *a,**k: np_load_old(*a, allow_pickle=True, **k)
-	xtest = np.load('data/bind/bind_test.npy')
-	xtrain = np.load('data/bind/bind_train.npy')
-	ntrain = np.load('data/notbind/nobind_train.npy')
-	ntest = np.load('data/notbind/nobind_test.npy')
+	xtest = np.load(df + '/bind/bind_test.npy')
+	xtrain = np.load(df + '/bind/bind_train.npy')
+	ntrain = np.load(df+'/notbind/nobind_train.npy')
+	ntest = np.load(df+'/notbind/nobind_test.npy')
 	xtestf = [np.flip(i) for i in xtest]
 	xtrainf = [np.flip(i) for i in xtrain]
 	ntestf = [np.flip(i) for i in ntest]
@@ -235,16 +231,16 @@ if Train:
 
 ###########################################################################
 if args.Test:
-	if Train and if Test:
+	if args.Train and args.Test:
 		MODEL_LOAD_DIR = SAVE_NAME
 	else: 
 		MODEL_LOAD_DIR = str(args.Load) + '/'
 	NUM_CLASSES = 2
 	INPUT_DIM = 27
-	DROPOUT = args.Dropout else .5
-	LR = args.Learning_rate else 0.001
-	HD = args.N_hidden else 200
-	NL = args.N_layers else 1
+	DROPOUT = args.Dropout
+	LR = args.Learning_rate
+	HD = args.N_hidden
+	NL = args.N_layers
 	BS = 1
 
 	def hot_prots(X):
@@ -263,7 +259,7 @@ if args.Test:
 	    ins = torch.from_numpy(np.asarray(x)).to(torch.float)
 	    return ins, labels, X_lengths
 
-	if Train == False:
+	if args.Train == False:
 		np_load_old = np.load
 		np.load = lambda *a,**k: np_load_old(*a, allow_pickle=True, **k)
 	xtrain = np.load(df+'/bind/bind_train.npy')
@@ -321,15 +317,13 @@ if args.Test:
 	            model.to(device)
 	            optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 	            model.eval()
-	            if LSTM == True:
-	                h1 = model.init_hidden1(1, 1)
+	            h1 = model.init_hidden1(1, 1)
 	            for input in data:
 	                optimizer.zero_grad()
-	                if LSTM == True:
-	                    inputs, labels, X_lengths = load_batch(input, y)
-	                    inputs = inputs.to(device)
-	                    labels = labels.to(device)
-	                    outs, h = model(inputs, X_lengths, h1)
+	                inputs, labels, X_lengths = load_batch(input, y)
+	                inputs = inputs.to(device)
+	                labels = labels.to(device)
+	                outs, h = model(inputs, X_lengths, h1)
 	                _, preds = outs.max(1)
 	                if preds.item() == 1:
 	                    corrects.append(1)
@@ -361,51 +355,50 @@ if args.Test:
 if args.Analysis:
 	NUM_CLASSES = 2
 	INPUT_DIM = 27
-	DROPOUT = args.Dropout else .5
-	LR = args.Learning_rate else 0.001
-	HD = args.N_hidden else 200
-	NL = args.N_layers else 1
+	DROPOUT = args.Dropout
+	LR = args.Learning_rate
+	HD = args.N_hidden
+	NL = args.N_layers
 	BS = 1
 
 	def hot_prots(X):
-    X_bin = []
-    ide = np.eye(INPUT_DIM, INPUT_DIM)
-    for i in range(len(X)):
-        x_ = X[i]
-        x = ide[x_.astype(int),:]
-        X_bin.append(x)
-    return X_bin
+	    X_bin = []
+	    ide = np.eye(INPUT_DIM, INPUT_DIM)
+	    for i in range(len(X)):
+	        x_ = X[i]
+	        x = ide[x_.astype(int),:]
+	        X_bin.append(x)
+	    return X_bin
 
 	def load_batch(x):
-    X_lengths = [x.shape[0]]
-    x = np.expand_dims(x, axis=0)
-    ins = torch.from_numpy(np.asarray(x)).to(torch.float)
-    return ins, X_lengths
+	    X_lengths = [x.shape[0]]
+	    x = np.expand_dims(x, axis=0)
+	    ins = torch.from_numpy(np.asarray(x)).to(torch.float)
+	    return ins, X_lengths
 
 	def get_data():
-		if Train and if test == False:
+		if args.Train and args.Test == False:
 			np_load_old = np.load
 			np.load = lambda *a,**k: np_load_old(*a, allow_pickle=True, **k)
-	    xtrain = np.load('data/bind/bind_train.npy')
-	    ntrain = np.load('data/notbind/nobind_train.npy')
-	    xtest = np.load('data/bind/bind_test.npy')
-	    ntest = np.load('data/notbind/nobind_test.npy')
-	    sxtrain = xtrain.copy()
-	    sxtest = xtest.copy()
-	    sntrain = ntrain.copy()
-	    sntest = ntest.copy()
-	    if FLIPPED == True:
-	        xtrain = [np.flip(i) for i in xtrain]
-	        ntrain = [np.flip(i) for i in ntrain]
-	        xtest = [np.flip(i) for i in xtest]
-	        ntest = [np.flip(i) for i in ntest]
-	    X = np.append(xtrain, xtest)
-	    NX = np.append(ntrain, ntest)
-	    bhot_seqs = hot_prots(X)
-	    nhot_seqs = hot_prots(NX)
-	    print('# of bind test sequences:', len(bhot_seqs))
-	    print('# of not-bind test sequences:', len(nhot_seqs))
-	    return bhot_seqs, nhot_seqs, sxtrain, sxtest, sntrain, sntest
+		xtrain = np.load('data/bind/bind_train.npy')
+		ntrain = np.load('data/notbind/nobind_train.npy')
+		xtest = np.load('data/bind/bind_test.npy')
+		ntest = np.load('data/notbind/nobind_test.npy')
+		sxtrain = xtrain.copy()
+		sxtest = xtest.copy()
+		sntrain = ntrain.copy()
+		sntest = ntest.copy()
+		xtrain = [np.flip(i) for i in xtrain]
+		ntrain = [np.flip(i) for i in ntrain]
+		xtest = [np.flip(i) for i in xtest]
+		ntest = [np.flip(i) for i in ntest]
+		X = np.append(xtrain, xtest)
+		NX = np.append(ntrain, ntest)
+		bhot_seqs = hot_prots(X)
+		nhot_seqs = hot_prots(NX)
+		print('# of bind test sequences:', len(bhot_seqs))
+		print('# of not-bind test sequences:', len(nhot_seqs))
+		return bhot_seqs, nhot_seqs, sxtrain, sxtest, sntrain, sntest
 
 
 	bhot_seqs, nhot_seqs, xtrain, xtest, ntrain, ntest = get_data()
@@ -413,27 +406,27 @@ if args.Analysis:
 	####collect hiddens based on data and label with model
 
 	class Classifier_LSTM(nn.Module):
-    def __init__(self, NL, HD, BS):
-        super(Classifier_LSTM, self).__init__()
-        self.NL = NL
-        self.HD = HD
-        self.BS = BS
-        self.lstm1 =  nn.LSTM(INPUT_DIM, self.HD, num_layers=self.NL, bias=True, BStch_first=True)
-        self.drop = nn.Dropout(p=DROPOUT)
-        self.fc = nn.Linear(HD, NUM_CLASSES)
-        self.sig = nn.Sigmoid()
-    def forward(self, inputs, X_lengths, hidden):
-        X, hidden1 = self.lstm1(inputs)
-        X = X[:,-1,:]
-        out = self.drop(X)
-        out = self.fc(X)
-        out = self.sig(out)
-        return out, hidden1
-    def init_hidden1(self, NL, BS):
-        weight = next(model.parameters()).data
-        hidden1 = (weight.new(NL, BS, HD).zero_().to(torch.int64),
-                  weight.new(NL, BS, HD).zero_().to(torch.int64))
-        return hidden1
+	    def __init__(self, NL, HD, BS):
+	        super(Classifier_LSTM, self).__init__()
+	        self.NL = NL
+	        self.HD = HD
+	        self.BS = BS
+	        self.lstm1 =  nn.LSTM(INPUT_DIM, self.HD, num_layers=self.NL, bias=True, BStch_first=True)
+	        self.drop = nn.Dropout(p=DROPOUT)
+	        self.fc = nn.Linear(HD, NUM_CLASSES)
+	        self.sig = nn.Sigmoid()
+	    def forward(self, inputs, X_lengths, hidden):
+	        X, hidden1 = self.lstm1(inputs)
+	        X = X[:,-1,:]
+	        out = self.drop(X)
+	        out = self.fc(X)
+	        out = self.sig(out)
+	        return out, hidden1
+	    def init_hidden1(self, NL, BS):
+	        weight = next(model.parameters()).data
+	        hidden1 = (weight.new(NL, BS, HD).zero_().to(torch.int64),
+	                  weight.new(NL, BS, HD).zero_().to(torch.int64))
+	        return hidden1
 
 	device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -458,8 +451,8 @@ if args.Analysis:
 	                    if preds.item() == label:
 	                        swap_acc.append(idx)
 	                    sh_all.append(h_steps)
-	            np.save((MODEL_PATH+tag +'/'+modelp.split(']')[0]+'-'+tag+'-all'+np.asarray(sh_all))
-	            np.save((MODEL_PATH+tag +'/'+modelp.split(']')[0]+'-'+tag+'-acc-'+str(len(swap_acc))), np.asarray(swap_acc))
+	                np.save((MODEL_PATH+tag +'/'+modelp.split(']')[0]+'-'+tag+'-all'+np.asarray(sh_all)))
+	                np.save((MODEL_PATH+tag +'/'+modelp.split(']')[0]+'-'+tag+'-acc-'+str(len(swap_acc))), np.asarray(swap_acc))
 
 	collect_hiddens(bhot_seqs, 1, args.Hiddens, 'bind')
 	collect_hiddens(nhot_seqs, 0, args.Hiddens, 'notbind')
@@ -473,15 +466,15 @@ if args.Analysis:
 
 	def load_hiddens(tag, HIDDENS_PATH):
 		c = []
-	    for file in files:
-	        if '.npy' in file :
-	            if tag in file and 'acc' in file:
-	                s = np.load(MODEL_PATH+file)
-	                print(file)
-	            if tag in file and 'all' in file:
-	                print(file)
-	                c.append(np.asarray(np.load(MODEL_PATH+file))[s])
-	    return c
+		for file in files:
+			if '.npy' in file :
+				if tag in file and 'acc' in file:
+					s = np.load(MODEL_PATH+file)
+					print(file)
+				if tag in file and 'all' in file:
+					print(file)
+					c.append(np.asarray(np.load(MODEL_PATH+file))[s])
+		return c
 
 	def pad(bin):
 	    shapes = []
